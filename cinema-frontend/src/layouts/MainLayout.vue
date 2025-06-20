@@ -19,6 +19,9 @@
             <router-link :to="isAdmin ? '/admin/films' : '/films'" class="nav-link">Filmy</router-link>
           </li>
           <li class="nav-item">
+            <router-link v-if="isAdmin" to="/admin/rooms" class="nav-link">Sale</router-link>
+          </li>
+          <li class="nav-item">
             <router-link :to="isAdmin ? '/admin/screenings' : '/screenings'" class="nav-link">Seanse</router-link>
           </li>
           <li class="nav-item">

@@ -8,34 +8,88 @@
       </div>
     </div>
 
-    <div v-else-if="screenings.length === 0" class="alert alert-info">
-      Brak dostępnych seansów.
+    <div v-else>
+      <div class="mb-4">
+        <h4>Filtruj</h4>
+        <div class="row g-2">
+          <div class="col-md-4">
+            <input v-model="filters.name" class="form-control" placeholder="Nazwa filmu lub sali...">
+          </div>
+          <div class="col-md-4">
+            <input v-model="filters.date" type="date" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-success" @click="showModal = true">Dodaj nowy seans</button>
+          </div>
+        </div>
+      </div>
+
+      <h4>Przyszłe seanse</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th @click="sortBy('filmName')" style="cursor: pointer">
+              Film
+              <span v-if="sortColumn === 'filmName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="sortBy('roomName')" style="cursor: pointer">
+              Sala
+              <span v-if="sortColumn === 'roomName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="sortBy('dateTime')" style="cursor: pointer">
+              Data i godzina
+              <span v-if="sortColumn === 'dateTime'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="screening in filteredFutureScreenings" :key="screening.screeningId">
+            <td>{{ screening.filmName }}</td>
+            <td>{{ screening.roomName }}</td>
+            <td>{{ formatDateTime(screening.dateTime) }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" @click="editScreening(screening)">Edytuj</button>
+              <button class="btn btn-sm btn-outline-danger" @click="deleteScreening(screening.screeningId)">Usuń</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 class="mt-5">Przeszłe seanse</h4>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th @click="sortBy('filmName')" style="cursor: pointer">
+              Film
+              <span v-if="sortColumn === 'filmName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="sortBy('roomName')" style="cursor: pointer">
+              Sala
+              <span v-if="sortColumn === 'roomName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th @click="sortBy('dateTime')" style="cursor: pointer">
+              Data i godzina
+              <span v-if="sortColumn === 'dateTime'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+            </th>
+            <th>Akcje</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="screening in filteredPastScreenings" :key="screening.screeningId">
+            <td>{{ screening.filmName }}</td>
+            <td>{{ screening.roomName }}</td>
+            <td>{{ formatDateTime(screening.dateTime) }}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-2" @click="editScreening(screening)">Edytuj</button>
+              <button class="btn btn-sm btn-outline-danger" @click="deleteScreening(screening.screeningId)">Usuń</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <table v-else class="table table-striped">
-      <thead>
-        <tr>
-          <th>Film</th>
-          <th>Sala</th>
-          <th>Data i godzina</th>
-          <th>Akcje</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="screening in screenings" :key="screening.screeningId">
-          <td>{{ screening.filmName }}</td>
-          <td>{{ screening.roomName }}</td>
-          <td>{{ formatDateTime(screening.dateTime) }}</td>
-          <td>
-            <button class="btn btn-sm btn-outline-primary me-2" @click="editScreening(screening)">Edytuj</button>
-            <button class="btn btn-sm btn-outline-danger" @click="deleteScreening(screening.screeningId)">Usuń</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <button class="btn btn-success mt-3" @click="showModal = true">Dodaj nowy seans</button>
-
+    <!-- Modal -->
     <div class="modal fade" tabindex="-1" :class="{ show: showModal }" style="display: block" v-if="showModal">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -80,7 +134,7 @@
 
             <div class="mb-3">
               <label class="form-label">Napisy</label>
-                <input v-model="form.subtitles" type="text" class="form-control">
+              <input v-model="form.subtitles" type="text" class="form-control">
             </div>
           </div>
           <div class="modal-footer">
@@ -106,6 +160,8 @@ export default {
       filmSearch: '',
       showModal: false,
       isEditing: false,
+      sortColumn: 'filmName',
+      sortDirection: 'asc',
       form: {
         screeningId: null,
         filmId: '',
@@ -115,15 +171,64 @@ export default {
         language: '',
         subtitles: ''
       },
+      filters: {
+        name: '',
+        date: ''
+      },
       loading: true
     };
   },
   computed: {
     filteredFilms() {
       return this.films.filter(f => f.name.toLowerCase().includes(this.filmSearch.toLowerCase()));
+    },
+    futureScreenings() {
+      const now = new Date();
+      return this.screenings.filter(s => new Date(s.dateTime) >= now);
+    },
+    pastScreenings() {
+      const now = new Date();
+      return this.screenings.filter(s => new Date(s.dateTime) < now);
+    },
+    filteredFutureScreenings() {
+      return this.applyFilters(this.futureScreenings);
+    },
+    filteredPastScreenings() {
+      return this.applyFilters(this.pastScreenings);
     }
   },
   methods: {
+    sortBy(column) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+    },
+    applyFilters(list) {
+      const filtered = list.filter(s => {
+        const nameMatch = s.filmName.toLowerCase().includes(this.filters.name.toLowerCase()) || s.roomName.toLowerCase().includes(this.filters.name.toLowerCase());
+        const dateMatch = !this.filters.date || s.dateTime.startsWith(this.filters.date);
+        return nameMatch && dateMatch;
+      });
+
+      const sorted = [...filtered].sort((a, b) => {
+        let aVal = a[this.sortColumn];
+        let bVal = b[this.sortColumn];
+
+        if (typeof aVal === 'string') {
+          aVal = aVal.toLowerCase();
+          bVal = bVal.toLowerCase();
+        }
+
+        if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      return sorted;
+    },
     async fetchScreenings() {
       this.loading = true;
       try {
