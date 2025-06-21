@@ -4,27 +4,32 @@ import Home from '../views/Home.vue';
 import Login from '../views/UserLogin.vue';
 import Register from '../views/UserRegister.vue';
 import Films from '../views/UserFilms.vue';
-import Screenings from '../views/UserScreenings.vue';
-import Reservation from '../views/UserReservation.vue';
+import UserScreenings from '../views/UserScreenings.vue';
+import UserReservation from '../views/UserReservation.vue';
+import UserHistory from '../views/UserHistory.vue';
 import Profile from '../views/UserProfile.vue';
 
 import AdminFilms from '../views/AdminFilms.vue';
 import AdminRooms from '../views/AdminRooms.vue';
 import AdminScreenings from '../views/AdminScreenings.vue';
 import AdminReservations from '../views/AdminReservations.vue';
+import AdminSeats from '../views/AdminSeats.vue';
 
 const routes = [
   { path: '/', component: Home },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
   { path: '/films', component: Films },
-  { path: '/films/:filmId/screenings', component: Screenings},
-  { path: '/reservations/:screeningId', component: Reservation, meta: { requiresAuth: true } },
+  { path: '/screenings', component: UserScreenings },
+  { path: '/history', component: UserHistory, meta: { requiresAuth: true } },
+  { path: '/reservations/:screeningId', component: UserReservation, name: 'Reservation', meta: { requiresAuth: true }, props: route => ({
+  screeningId: Number(route.params.screeningId)}) },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   { path: '/admin/films', component: AdminFilms, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/rooms', component: AdminRooms, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/screenings', component: AdminScreenings, meta: { requiresAuth: true, requiresAdmin: true } },
   { path: '/admin/reservations', component: AdminReservations, meta: { requiresAuth: true, requiresAdmin: true } },
+  { path: '/admin/seats', component: AdminSeats, meta: { requiresAuth: true, requiresAdmin: true } },
 ];
 
 const router = createRouter({

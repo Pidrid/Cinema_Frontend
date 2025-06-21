@@ -4,6 +4,8 @@ import router from './router';
 import store from './store';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'bootstrap'
 
 axios.defaults.baseURL = 'https://localhost:7296';
